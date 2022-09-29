@@ -255,13 +255,18 @@ class RTCGRPCSignal implements Signal {
     );
     client.onHeaders((headers: grpc.Metadata) => connector.onHeaders(service, headers));
     client.onMessage((reply: pb.Reply) => {
+      //console.log("rtc.ts,line 258,reply:",reply);
       switch (reply.getPayloadCase()) {
         case pb.Reply.PayloadCase.JOIN:
           const result = reply.getJoin();
+          console.log("rtc.ts,line 261,pb.Reply.PayloadCase.JOIN:")
+          console.log(result);
           this._event.emit('join-reply', result);
           break;
         case pb.Reply.PayloadCase.DESCRIPTION:
           const desc = reply.getDescription();
+          console.log("rtc.ts,line 267,pb.Reply.PayloadCase.DESCRIPTION:")
+          console.log(desc);
           if (desc?.getType() === 'offer') {
             if (this.onnegotiate) this.onnegotiate({ sdp: desc.getSdp(), type: 'offer' });
           } else if (desc?.getType() === 'answer') {
@@ -273,15 +278,20 @@ class RTCGRPCSignal implements Signal {
           break;
         case pb.Reply.PayloadCase.TRICKLE:
           const pbTrickle = reply.getTrickle();
+          //console.log("rtc.ts,line 280,pb.Reply.PayloadCase.TRICKLE:")
+          //console.log(pbTrickle);         
           if (pbTrickle?.getInit() !== undefined) {
             const candidate = JSON.parse(pbTrickle.getInit() as string);
             const trickle = { target: pbTrickle.getTarget(), candidate };
+            console.log(trickle);
             if (this.ontrickle) this.ontrickle(trickle);
           }
           break;
         case pb.Reply.PayloadCase.TRACKEVENT:
           {
             const evt = reply.getTrackevent();
+            console.log("rtc.ts,line 291,pb.Reply.PayloadCase.TRACKEVENT:")
+          console.log(evt);
             let state = TrackState.ADD;
             switch (evt?.getState()) {
               case pb.TrackEvent.State.ADD:
@@ -315,6 +325,8 @@ class RTCGRPCSignal implements Signal {
           break;
         case pb.Reply.PayloadCase.SUBSCRIPTION:
           const subscription = reply.getSubscription();
+          console.log("rtc.ts,line 326,pb.Reply.PayloadCase.SUBSCRIPTION::")
+          console.log(subscription);
           this._event.emit('subscription', {
             success: subscription?.getSuccess() || false,
             error: subscription?.getError(),
@@ -345,6 +357,7 @@ class RTCGRPCSignal implements Signal {
       join.getConfigMap().set('NoSubscribe', this._config?.no_subscribe ? 'true' : 'false');
       join.getConfigMap().set('NoAutoSubscribe', this._config?.no_auto_subscribe ? 'true' : 'false');
     }
+   
     const dest = new pb.SessionDescription();
     dest.setSdp(offer.sdp || '');
     dest.setType(offer.type || '');
@@ -353,10 +366,12 @@ class RTCGRPCSignal implements Signal {
       dest.setTrackinfosList(this._tracksInfos);
     }
     join.setDescription(dest);
+    console.log("rtc.ts,line,368,join(),",join);
     request.setJoin(join);
     this._client.send(request);
     return new Promise<any>((resolve, reject) => {
       const handler = (result: pb.JoinReply) => {
+        console.log("rtc.ts,line 372,handler",result);
         if (result.getSuccess()) {
           resolve({
             sdp: result.getDescription()!.getSdp(),

@@ -45,20 +45,45 @@ export class Transport {
     this.candidates = [];
 
     if (role === Role.pub) {
+      console.log("client.ts,line 48,this.pc.createDataChannel(API_CHANNEL)");
       this.pc.createDataChannel(API_CHANNEL);
+      //const dataChannel=this.pc.createDataChannel(API_CHANNEL);
+      /*
+      吴亚雄添加
+      双方都没有保存createDataChannel后的channel，也没有处理，
+     
+      dataChannel.onmessage =(ev)=>{
+        console.log("client.ts,line 51,got data:"+ev.data)
+      }
+ */
+      
     }
 
     this.pc.onicecandidate = ({ candidate }) => {
       if (candidate) {
+        console.log("client.ts,line 64,pc.onicecandidate,")
+        console.log(candidate)
         this.signal.trickle({ target: role, candidate });
       }
     };
+    //吴亚雄添加
+    // this.pc.ondatachannel=(ev)=>{
+    //    console.log("client.ts,line 58,pc.ondatachannel,",ev)
+    //    ev.channel.onmessage = (e) => {      
+    //       console.log("client.ts,line 61,ev.channel.onmessage msg:"+e.data); 
+    //     };
+    //   ev.channel.onopen=(e1) =>{
+    //     console.log("client.ts,line 64,pc.onopen)        
+    //   }
+    // }
+    // 
 
     this.pc.oniceconnectionstatechange = async (e) => {
+      console.log("client.ts,line 67,pc.oniceconnectionstatechange ",this.pc.iceConnectionState,e)
       if (this.pc.iceConnectionState === 'disconnected') {
         if (this.pc.restartIce !== undefined) {
           // this will trigger onNegotiationNeeded
-          this.pc.restartIce();
+         // this.pc.restartIce();
         }
       }
     };
@@ -100,6 +125,7 @@ export default class Client {
   }
 
   async join(sid: string, uid: string) {
+    console.log("client.ts,line 105,join");
     this.transports = {
       [Role.pub]: new Transport(Role.pub, this.signal, this.config),
       [Role.sub]: new Transport(Role.sub, this.signal, this.config),
@@ -112,15 +138,27 @@ export default class Client {
       if (this.ontrack) {
         this.ontrack(ev.track, remote);
       }
+
+      //连接成功后，从pub发送音频
+      // const localMedia = navigator.mediaDevices.getUserMedia({
+      //   audio: true,       
+      // });
+      // this.publish(localMedia);
+
+      
     };
 
+
+    
     const apiReady = new Promise<void>((resolve) => {
       this.transports![Role.sub].pc.ondatachannel = (ev: RTCDataChannelEvent) => {
+        console.log("this.transports![Role.sub].pc.ondatachannel,"+ev);
         if (ev.channel.label === API_CHANNEL) {
           this.transports![Role.sub].api = ev.channel;
           this.transports![Role.pub].api = ev.channel;
           ev.channel.onmessage = (e) => {
             try {
+              console.log("client.ts,line 126,API-CHANNEL get msg:"+e.data);
               const msg = JSON.parse(e.data);
               this.processChannelMessage(msg);
             } catch (err) {
@@ -139,8 +177,11 @@ export default class Client {
     });
 
     const offer = await this.transports[Role.pub].pc.createOffer();
+    console.log("client.ts line 142,offer: ",offer)
+    //console.log(offer)
     await this.transports[Role.pub].pc.setLocalDescription(offer);
     const answer = await this.signal.join(sid, uid, offer);
+    console.log("client.ts,line 146,answer: ", answer);
     await this.transports[Role.pub].pc.setRemoteDescription(answer);
     this.transports[Role.pub].candidates.forEach((c) => this.transports![Role.pub].pc.addIceCandidate(c));
     this.transports[Role.pub].pc.onnegotiationneeded = this.onNegotiationNeeded.bind(this);
@@ -198,6 +239,7 @@ export default class Client {
     if (!this.transports) {
       throw Error(ERR_NO_SESSION);
     }
+   // console.log("client.ts,line 204,0:pub,1:sub", candidate,target);
     if (this.transports[target].pc.remoteDescription) {
       this.transports[target].pc.addIceCandidate(candidate);
     } else {
@@ -213,9 +255,12 @@ export default class Client {
     let answer: RTCSessionDescriptionInit | undefined;
     try {
       await this.transports[Role.sub].pc.setRemoteDescription(description);
+      //this.transports[Role.sub].hasRemoteDescription = true;
       this.transports[Role.sub].candidates.forEach((c) => this.transports![Role.sub].pc.addIceCandidate(c));
       this.transports[Role.sub].candidates = [];
       answer = await this.transports[Role.sub].pc.createAnswer();
+      console.log("client.ts,line 249,answer:")
+      console.log(answer);
       await this.transports[Role.sub].pc.setLocalDescription(answer);
       this.signal.answer(answer);
     } catch (err) {
@@ -249,6 +294,7 @@ export default class Client {
   }
 
   private processChannelMessage(msg: any) {
+    console.log("client.ts,line 257,API-CHANNEL get msg:"+msg);
     if (msg.method !== undefined && msg.params !== undefined) {
       switch (msg.method) {
         case 'audioLevels':

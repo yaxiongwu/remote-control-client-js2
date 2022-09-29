@@ -1,16 +1,16 @@
 // package: rtc
-// file: rtc.proto
+// file: proto/rtc/rtc.proto
 
-import * as rtc_pb from "./rtc_pb";
-import {grpc} from "@improbable-eng/grpc-web";
+import * as proto_rtc_rtc_pb from '../../proto/rtc/rtc_pb';
+import { grpc } from '@improbable-eng/grpc-web';
 
 type RTCSignal = {
   readonly methodName: string;
   readonly service: typeof RTC;
   readonly requestStream: true;
   readonly responseStream: true;
-  readonly requestType: typeof rtc_pb.Request;
-  readonly responseType: typeof rtc_pb.Reply;
+  readonly requestType: typeof proto_rtc_rtc_pb.Request;
+  readonly responseType: typeof proto_rtc_rtc_pb.Reply;
 };
 
 export class RTC {
@@ -18,8 +18,8 @@ export class RTC {
   static readonly Signal: RTCSignal;
 }
 
-export type ServiceError = { message: string, code: number; metadata: grpc.Metadata }
-export type Status = { details: string, code: number; metadata: grpc.Metadata }
+export type ServiceError = { message: string; code: number; metadata: grpc.Metadata };
+export type Status = { details: string; code: number; metadata: grpc.Metadata };
 
 interface UnaryResponse {
   cancel(): void;
@@ -50,6 +50,5 @@ export class RTCClient {
   readonly serviceHost: string;
 
   constructor(serviceHost: string, options?: grpc.RpcOptions);
-  signal(metadata?: grpc.Metadata): BidirectionalStream<rtc_pb.Request, rtc_pb.Reply>;
+  signal(metadata?: grpc.Metadata): BidirectionalStream<proto_rtc_rtc_pb.Request, proto_rtc_rtc_pb.Reply>;
 }
-

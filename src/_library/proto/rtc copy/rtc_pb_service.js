@@ -1,7 +1,7 @@
 // package: rtc
-// file: rtc.proto
+// file: proto/rtc/rtc.proto
 
-var rtc_pb = require("./rtc_pb");
+var proto_rtc_rtc_pb = require("../../proto/rtc/rtc_pb");
 var grpc = require("@improbable-eng/grpc-web").grpc;
 
 var RTC = (function () {
@@ -15,8 +15,8 @@ RTC.Signal = {
   service: RTC,
   requestStream: true,
   responseStream: true,
-  requestType: rtc_pb.Request,
-  responseType: rtc_pb.Reply
+  requestType: proto_rtc_rtc_pb.Request,
+  responseType: proto_rtc_rtc_pb.Reply
 };
 
 exports.RTC = RTC;

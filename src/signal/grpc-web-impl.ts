@@ -68,6 +68,7 @@ class IonSFUGRPCWebSignal implements Signal {
     join.setDescription(buffer);
     request.setJoin(join);
     this.client.send(request);
+    console.log("grpc-web-impl.ts,line 71,join")
 
     return new Promise<RTCSessionDescriptionInit>((resolve, reject) => {
       const handler = (desc: RTCSessionDescriptionInit) => {
