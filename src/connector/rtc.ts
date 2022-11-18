@@ -6,6 +6,7 @@ import { EventEmitter } from 'events';
 import * as sfu_rpc from '../_library/proto/rtc/rtc_pb_service';
 import * as pb from '../_library/proto/rtc/rtc_pb';
 import { LocalStream, RemoteStream } from '../stream';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * TrackState: track state
@@ -93,6 +94,7 @@ export interface Result {
  */
 export class RTC implements Service {
   name: string;
+  //id:string;
   connector: Connector;
   connected: boolean;
   config?: Configuration;
@@ -113,6 +115,7 @@ export class RTC implements Service {
    */
   constructor(connector: Connector, config?: Configuration) {
     this.name = 'rtc';
+    //this.id= uuidv4();
     this.config = config;
     this.connected = false;
     this.connector = connector;
@@ -128,10 +131,34 @@ export class RTC implements Service {
    * @param {any} config:JoinConfig|undefined
    * @returns
    */
-  async join(sid: string, uid: string, config: JoinConfig | undefined) {
-    this._sig!.config = config;
-    return this._rtc?.join(sid, uid);
+  // async join(sid: string, uid: string, config: JoinConfig | undefined) {
+  //   this._sig!.config = config;
+  //   return this._rtc?.join(sid, uid);
+  // }
+
+
+  /**
+ * getOnlineSources
+ * @date 2021-11-03
+ * @param {any} sourceType: pb.SourceTypeMap
+ * @returns
+ */
+  async getOnlineSources(sourceType: pb.SourceTypeMap) {
+
+    return this._sig?.getOnlineSources(sourceType);
   }
+
+  /**
+* getOnlineSources
+* @date 2021-11-03
+* @param {any} sourceType: pb.SourceTypeMap
+* @returns
+*/
+  async wantControl(myID:string, destination: string,config: JoinConfig | undefined) {
+    //this.id=uid;
+    return this._rtc?.wantControl(myID,destination);
+  }
+
 
   /**
    * leave session
@@ -234,11 +261,12 @@ export class RTC implements Service {
  */
 class RTCGRPCSignal implements Signal {
   connector: Connector;
+  id?: string;
   protected _client: grpc.Client<pb.Request, pb.Reply>;
   private _event: EventEmitter = new EventEmitter();
   private _tracksInfos?: pb.TrackInfo[];
   onnegotiate?: ((jsep: RTCSessionDescriptionInit) => void) | undefined;
-  ontrickle?: ((trickle: Trickle) => void) | undefined;
+  recvTrickle?: ((trickle: Trickle) => void) | undefined;
   ontrackevent?: (ev: TrackEvent) => void;
   private _config?: JoinConfig;
   set config(config: JoinConfig | undefined) {
@@ -260,13 +288,25 @@ class RTCGRPCSignal implements Signal {
         case pb.Reply.PayloadCase.JOIN:
           const result = reply.getJoin();
           console.log("rtc.ts,line 261,pb.Reply.PayloadCase.JOIN:")
-          console.log(result);
+          //console.log(result);
           this._event.emit('join-reply', result);
+          break;
+        case pb.Reply.PayloadCase.ONLINESOURCE:
+          const onlineSources = reply.getOnlinesource();
+          console.log("rtc.ts,line 283,pb.Reply.PayloadCase.ONLINESOURCE:%o",onlineSources);
+          
+          this._event.emit('onlineSources-reply', onlineSources);
+          break;
+        case pb.Reply.PayloadCase.WANTCONTROL:
+          const wantControlReply = reply.getWantcontrol();
+          console.log("rtc.ts,line 298,pb.Reply.PayloadCase.WANTCONTROL:%o",wantControlReply);
+          
+          this._event.emit('wantControl-reply', wantControlReply);
           break;
         case pb.Reply.PayloadCase.DESCRIPTION:
           const desc = reply.getDescription();
-          console.log("rtc.ts,line 267,pb.Reply.PayloadCase.DESCRIPTION:")
-          console.log(desc);
+          console.log("rtc.ts,line 267,pb.Reply.PayloadCase.DESCRIPTION:%o",desc);
+          
           if (desc?.getType() === 'offer') {
             if (this.onnegotiate) this.onnegotiate({ sdp: desc.getSdp(), type: 'offer' });
           } else if (desc?.getType() === 'answer') {
@@ -282,16 +322,16 @@ class RTCGRPCSignal implements Signal {
           //console.log(pbTrickle);         
           if (pbTrickle?.getInit() !== undefined) {
             const candidate = JSON.parse(pbTrickle.getInit() as string);
-            const trickle = { target: pbTrickle.getTarget(), candidate };
-            console.log(trickle);
-            if (this.ontrickle) this.ontrickle(trickle);
+            const trickle = { candidate, destination:pbTrickle?.getFrom()};
+            console.log("rtc.ts line 326,pb.Reply.PayloadCase.TRICKLE:%o",trickle);
+            if (this.recvTrickle) this.recvTrickle(trickle);
           }
           break;
         case pb.Reply.PayloadCase.TRACKEVENT:
           {
             const evt = reply.getTrackevent();
-            console.log("rtc.ts,line 291,pb.Reply.PayloadCase.TRACKEVENT:")
-          console.log(evt);
+            console.log("rtc.ts,line 291,pb.Reply.PayloadCase.TRACKEVENT:"+evt)
+            
             let state = TrackState.ADD;
             switch (evt?.getState()) {
               case pb.TrackEvent.State.ADD:
@@ -325,8 +365,8 @@ class RTCGRPCSignal implements Signal {
           break;
         case pb.Reply.PayloadCase.SUBSCRIPTION:
           const subscription = reply.getSubscription();
-          console.log("rtc.ts,line 326,pb.Reply.PayloadCase.SUBSCRIPTION::")
-          console.log(subscription);
+          console.log("rtc.ts,line 368,pb.Reply.PayloadCase.SUBSCRIPTION::")
+          //console.log(subscription);
           this._event.emit('subscription', {
             success: subscription?.getSuccess() || false,
             error: subscription?.getError(),
@@ -357,7 +397,7 @@ class RTCGRPCSignal implements Signal {
       join.getConfigMap().set('NoSubscribe', this._config?.no_subscribe ? 'true' : 'false');
       join.getConfigMap().set('NoAutoSubscribe', this._config?.no_auto_subscribe ? 'true' : 'false');
     }
-   
+
     const dest = new pb.SessionDescription();
     dest.setSdp(offer.sdp || '');
     dest.setType(offer.type || '');
@@ -366,12 +406,12 @@ class RTCGRPCSignal implements Signal {
       dest.setTrackinfosList(this._tracksInfos);
     }
     join.setDescription(dest);
-    console.log("rtc.ts,line,368,join(),",join);
+    console.log("rtc.ts,line,368,join(),", join);
     request.setJoin(join);
     this._client.send(request);
     return new Promise<any>((resolve, reject) => {
       const handler = (result: pb.JoinReply) => {
-        console.log("rtc.ts,line 372,handler",result);
+        console.log("rtc.ts,line 372,handler", result);
         if (result.getSuccess()) {
           resolve({
             sdp: result.getDescription()!.getSdp(),
@@ -387,15 +427,88 @@ class RTCGRPCSignal implements Signal {
   }
 
   /**
+   * join a session
+   * @date 2021-11-03
+   * @param {any} sid:string
+   * @param {any} uid:null|string
+   * @param {any} offer:RTCSessionDescriptionInit
+   * @returns {any}
+   */
+  //wantControl(from: string,to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
+    wantControl(from: string,to:string): Promise<RTCSessionDescriptionInit> {
+    this.id = from;    //this.id= uuidv4()
+    const request = new pb.Request();
+    const wantControlReq = new pb.WantControlRequest();
+    
+    wantControlReq.setFrom(from );
+    wantControlReq.setTo( to ); 
+    
+    //wantControlReq.setSdp(offer.sdp || '');
+    //wantControlReq.setSdptype(offer.type || '');
+    console.log("rtc.ts,line,447,wantControl(),", wantControlReq);
+    request.setWantcontrol(wantControlReq);
+    this._client.send(request);
+    return new Promise<any>((resolve, reject) => {
+      const handler = (result: pb.WantControlReply) => {
+        console.log("rtc.ts,line 454 WantControlReply,handler", result);
+        if (result.getSuccess()) {
+          resolve({
+            // idleornot: result.getIdleornot(),
+            // resttimesecofcontroling: result.getResttimesecofcontroling(),
+            // numofwaiting: result.getNumofwaiting(),
+            sdp:result.getSdp(),
+            type:result.getSdptype(),
+          });
+        } else {
+          reject(result.getError()?.toObject());
+        }
+        this._event.removeListener('wantControl-reply', handler);
+      };
+      this._event.addListener('wantControl-reply', handler);
+    });
+  }
+
+
+  /**
+   * getOnlineSources
+   * @date 2021-11-03
+   * @param {any} sourceType: pb.SourceTypeMap
+   * @returns {any} Promise<Array<pb.OnLineSources>
+   */
+  getOnlineSources(sourceType: pb.SourceTypeMap): Promise<Array<pb.OnLineSources>> {
+    const request = new pb.Request();
+    const onlineSourceRequest = new pb.OnLineSourceRequest();
+    onlineSourceRequest.setSourcetype(pb.SourceType.CAR)
+
+    request.setOnlinesource(onlineSourceRequest);
+    this._client.send(request);
+    return new Promise<any>((resolve, reject) => {
+      const handler = (result: pb.OnLineSourceReply) => {
+        console.log("rtc.ts,line 422,getOnlineSources:", result.getOnlinesourcesList());
+        if (result.getSuccess()) {
+          resolve(result.getOnlinesourcesList());
+        } else {
+          reject(result.getError()?.toObject());
+        }
+        this._event.removeListener('onlineSources-reply', handler);
+      };
+      this._event.addListener('onlineSources-reply', handler);
+    });
+  }
+
+
+  /**
    * send trickle
    * @date 2021-11-03
    * @param {any} trickle:Trickle
    * @returns {any}
    */
-  trickle(trickle: Trickle) {
+   sendTrickle(trickle: Trickle) {
+    //alert(this.id)
     const request = new pb.Request();
     const pbTrickle = new pb.Trickle();
     pbTrickle.setInit(JSON.stringify(trickle.candidate));
+    pbTrickle.setTo(trickle.destination)
     request.setTrickle(pbTrickle);
     this._client.send(request);
   }
@@ -438,6 +551,18 @@ class RTCGRPCSignal implements Signal {
     desc.setSdp(answer.sdp || '');
     desc.setType(answer.type || '');
     desc.setTarget(pb.Target.SUBSCRIBER);
+    request.setDescription(desc);
+    this._client.send(request);
+  }
+
+  answer2(answer: RTCSessionDescriptionInit,from:string,to:string) {
+    const request = new pb.Request();
+    const desc = new pb.SessionDescription();
+    desc.setSdp(answer.sdp || '');
+    desc.setType(answer.type || '');
+    //desc.setTarget(pb.Target.SUBSCRIBER);
+    desc.setFrom(from);
+    desc.setTo(to);
     request.setDescription(desc);
     this._client.send(request);
   }

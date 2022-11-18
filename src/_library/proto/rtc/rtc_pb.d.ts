@@ -10,8 +10,11 @@ export class RegisterRequest extends jspb.Message {
   getUid(): string;
   setUid(value: string): void;
 
-  getRole(): RoleMap[keyof RoleMap];
-  setRole(value: RoleMap[keyof RoleMap]): void;
+  getName(): string;
+  setName(value: string): void;
+
+  getSourcetype(): SourceTypeMap[keyof SourceTypeMap];
+  setSourcetype(value: SourceTypeMap[keyof SourceTypeMap]): void;
 
   getConfigMap(): jspb.Map<string, string>;
   clearConfigMap(): void;
@@ -29,7 +32,8 @@ export namespace RegisterRequest {
   export type AsObject = {
     sid: string,
     uid: string,
-    role: RoleMap[keyof RoleMap],
+    name: string,
+    sourcetype: SourceTypeMap[keyof SourceTypeMap],
     configMap: Array<[string, string]>,
   }
 }
@@ -57,6 +61,241 @@ export namespace RegisterReply {
   export type AsObject = {
     success: boolean,
     error?: Error.AsObject,
+  }
+}
+
+export class OnLineSourceRequest extends jspb.Message {
+  getSourcetype(): SourceTypeMap[keyof SourceTypeMap];
+  setSourcetype(value: SourceTypeMap[keyof SourceTypeMap]): void;
+
+  getConfigMap(): jspb.Map<string, string>;
+  clearConfigMap(): void;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): OnLineSourceRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: OnLineSourceRequest): OnLineSourceRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: OnLineSourceRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): OnLineSourceRequest;
+  static deserializeBinaryFromReader(message: OnLineSourceRequest, reader: jspb.BinaryReader): OnLineSourceRequest;
+}
+
+export namespace OnLineSourceRequest {
+  export type AsObject = {
+    sourcetype: SourceTypeMap[keyof SourceTypeMap],
+    configMap: Array<[string, string]>,
+  }
+}
+
+export class OnLineSources extends jspb.Message {
+  getUid(): string;
+  setUid(value: string): void;
+
+  getName(): string;
+  setName(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): OnLineSources.AsObject;
+  static toObject(includeInstance: boolean, msg: OnLineSources): OnLineSources.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: OnLineSources, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): OnLineSources;
+  static deserializeBinaryFromReader(message: OnLineSources, reader: jspb.BinaryReader): OnLineSources;
+}
+
+export namespace OnLineSources {
+  export type AsObject = {
+    uid: string,
+    name: string,
+  }
+}
+
+export class OnLineSourceReply extends jspb.Message {
+  clearOnlinesourcesList(): void;
+  getOnlinesourcesList(): Array<OnLineSources>;
+  setOnlinesourcesList(value: Array<OnLineSources>): void;
+  addOnlinesources(value?: OnLineSources, index?: number): OnLineSources;
+
+  getSuccess(): boolean;
+  setSuccess(value: boolean): void;
+
+  hasError(): boolean;
+  clearError(): void;
+  getError(): Error | undefined;
+  setError(value?: Error): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): OnLineSourceReply.AsObject;
+  static toObject(includeInstance: boolean, msg: OnLineSourceReply): OnLineSourceReply.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: OnLineSourceReply, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): OnLineSourceReply;
+  static deserializeBinaryFromReader(message: OnLineSourceReply, reader: jspb.BinaryReader): OnLineSourceReply;
+}
+
+export namespace OnLineSourceReply {
+  export type AsObject = {
+    onlinesourcesList: Array<OnLineSources.AsObject>,
+    success: boolean,
+    error?: Error.AsObject,
+  }
+}
+
+export class ViewSourceRequest extends jspb.Message {
+  getUid(): string;
+  setUid(value: string): void;
+
+  getConfigMap(): jspb.Map<string, string>;
+  clearConfigMap(): void;
+  hasDescription(): boolean;
+  clearDescription(): void;
+  getDescription(): SessionDescription | undefined;
+  setDescription(value?: SessionDescription): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ViewSourceRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ViewSourceRequest): ViewSourceRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ViewSourceRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ViewSourceRequest;
+  static deserializeBinaryFromReader(message: ViewSourceRequest, reader: jspb.BinaryReader): ViewSourceRequest;
+}
+
+export namespace ViewSourceRequest {
+  export type AsObject = {
+    uid: string,
+    configMap: Array<[string, string]>,
+    description?: SessionDescription.AsObject,
+  }
+}
+
+export class ViewSourceReply extends jspb.Message {
+  getSuccess(): boolean;
+  setSuccess(value: boolean): void;
+
+  hasError(): boolean;
+  clearError(): void;
+  getError(): Error | undefined;
+  setError(value?: Error): void;
+
+  getResult(): ViewSourceReply.ResultMap[keyof ViewSourceReply.ResultMap];
+  setResult(value: ViewSourceReply.ResultMap[keyof ViewSourceReply.ResultMap]): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ViewSourceReply.AsObject;
+  static toObject(includeInstance: boolean, msg: ViewSourceReply): ViewSourceReply.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ViewSourceReply, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ViewSourceReply;
+  static deserializeBinaryFromReader(message: ViewSourceReply, reader: jspb.BinaryReader): ViewSourceReply;
+}
+
+export namespace ViewSourceReply {
+  export type AsObject = {
+    success: boolean,
+    error?: Error.AsObject,
+    result: ViewSourceReply.ResultMap[keyof ViewSourceReply.ResultMap],
+  }
+
+  export interface ResultMap {
+    WEBRTC: 0;
+    CLOUD: 1;
+    ERROR: 2;
+  }
+
+  export const Result: ResultMap;
+}
+
+export class WantControlRequest extends jspb.Message {
+  getFrom(): string;
+  setFrom(value: string): void;
+
+  getTo(): string;
+  setTo(value: string): void;
+
+  getConfigMap(): jspb.Map<string, string>;
+  clearConfigMap(): void;
+  getSdptype(): string;
+  setSdptype(value: string): void;
+
+  getSdp(): string;
+  setSdp(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): WantControlRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: WantControlRequest): WantControlRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: WantControlRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): WantControlRequest;
+  static deserializeBinaryFromReader(message: WantControlRequest, reader: jspb.BinaryReader): WantControlRequest;
+}
+
+export namespace WantControlRequest {
+  export type AsObject = {
+    from: string,
+    to: string,
+    configMap: Array<[string, string]>,
+    sdptype: string,
+    sdp: string,
+  }
+}
+
+export class WantControlReply extends jspb.Message {
+  getSuccess(): boolean;
+  setSuccess(value: boolean): void;
+
+  getIdleornot(): boolean;
+  setIdleornot(value: boolean): void;
+
+  getResttimesecofcontroling(): number;
+  setResttimesecofcontroling(value: number): void;
+
+  getNumofwaiting(): number;
+  setNumofwaiting(value: number): void;
+
+  hasError(): boolean;
+  clearError(): void;
+  getError(): Error | undefined;
+  setError(value?: Error): void;
+
+  getFrom(): string;
+  setFrom(value: string): void;
+
+  getTo(): string;
+  setTo(value: string): void;
+
+  getSdptype(): string;
+  setSdptype(value: string): void;
+
+  getSdp(): string;
+  setSdp(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): WantControlReply.AsObject;
+  static toObject(includeInstance: boolean, msg: WantControlReply): WantControlReply.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: WantControlReply, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): WantControlReply;
+  static deserializeBinaryFromReader(message: WantControlReply, reader: jspb.BinaryReader): WantControlReply;
+}
+
+export namespace WantControlReply {
+  export type AsObject = {
+    success: boolean,
+    idleornot: boolean,
+    resttimesecofcontroling: number,
+    numofwaiting: number,
+    error?: Error.AsObject,
+    from: string,
+    to: string,
+    sdptype: string,
+    sdp: string,
   }
 }
 
@@ -182,6 +421,12 @@ export namespace TrackInfo {
 }
 
 export class SessionDescription extends jspb.Message {
+  getFrom(): string;
+  setFrom(value: string): void;
+
+  getTo(): string;
+  setTo(value: string): void;
+
   getTarget(): TargetMap[keyof TargetMap];
   setTarget(value: TargetMap[keyof TargetMap]): void;
 
@@ -208,6 +453,8 @@ export class SessionDescription extends jspb.Message {
 
 export namespace SessionDescription {
   export type AsObject = {
+    from: string,
+    to: string,
     target: TargetMap[keyof TargetMap],
     type: string,
     sdp: string,
@@ -216,6 +463,12 @@ export namespace SessionDescription {
 }
 
 export class Trickle extends jspb.Message {
+  getFrom(): string;
+  setFrom(value: string): void;
+
+  getTo(): string;
+  setTo(value: string): void;
+
   getTarget(): TargetMap[keyof TargetMap];
   setTarget(value: TargetMap[keyof TargetMap]): void;
 
@@ -234,6 +487,8 @@ export class Trickle extends jspb.Message {
 
 export namespace Trickle {
   export type AsObject = {
+    from: string,
+    to: string,
     target: TargetMap[keyof TargetMap],
     init: string,
   }
@@ -483,6 +738,26 @@ export class Request extends jspb.Message {
   getRegister(): RegisterRequest | undefined;
   setRegister(value?: RegisterRequest): void;
 
+  hasOnlinesource(): boolean;
+  clearOnlinesource(): void;
+  getOnlinesource(): OnLineSourceRequest | undefined;
+  setOnlinesource(value?: OnLineSourceRequest): void;
+
+  hasViewsource(): boolean;
+  clearViewsource(): void;
+  getViewsource(): ViewSourceRequest | undefined;
+  setViewsource(value?: ViewSourceRequest): void;
+
+  hasWantcontrol(): boolean;
+  clearWantcontrol(): void;
+  getWantcontrol(): WantControlRequest | undefined;
+  setWantcontrol(value?: WantControlRequest): void;
+
+  hasWantcontrolreply(): boolean;
+  clearWantcontrolreply(): void;
+  getWantcontrolreply(): WantControlReply | undefined;
+  setWantcontrolreply(value?: WantControlReply): void;
+
   getPayloadCase(): Request.PayloadCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Request.AsObject;
@@ -501,6 +776,10 @@ export namespace Request {
     trickle?: Trickle.AsObject,
     subscription?: SubscriptionRequest.AsObject,
     register?: RegisterRequest.AsObject,
+    onlinesource?: OnLineSourceRequest.AsObject,
+    viewsource?: ViewSourceRequest.AsObject,
+    wantcontrol?: WantControlRequest.AsObject,
+    wantcontrolreply?: WantControlReply.AsObject,
   }
 
   export enum PayloadCase {
@@ -510,6 +789,10 @@ export namespace Request {
     TRICKLE = 3,
     SUBSCRIPTION = 4,
     REGISTER = 5,
+    ONLINESOURCE = 6,
+    VIEWSOURCE = 7,
+    WANTCONTROL = 8,
+    WANTCONTROLREPLY = 9,
   }
 }
 
@@ -549,6 +832,21 @@ export class Reply extends jspb.Message {
   getRegister(): RegisterReply | undefined;
   setRegister(value?: RegisterReply): void;
 
+  hasOnlinesource(): boolean;
+  clearOnlinesource(): void;
+  getOnlinesource(): OnLineSourceReply | undefined;
+  setOnlinesource(value?: OnLineSourceReply): void;
+
+  hasViewsource(): boolean;
+  clearViewsource(): void;
+  getViewsource(): ViewSourceReply | undefined;
+  setViewsource(value?: ViewSourceReply): void;
+
+  hasWantcontrol(): boolean;
+  clearWantcontrol(): void;
+  getWantcontrol(): WantControlReply | undefined;
+  setWantcontrol(value?: WantControlReply): void;
+
   getPayloadCase(): Reply.PayloadCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Reply.AsObject;
@@ -569,6 +867,9 @@ export namespace Reply {
     subscription?: SubscriptionReply.AsObject,
     error?: Error.AsObject,
     register?: RegisterReply.AsObject,
+    onlinesource?: OnLineSourceReply.AsObject,
+    viewsource?: ViewSourceReply.AsObject,
+    wantcontrol?: WantControlReply.AsObject,
   }
 
   export enum PayloadCase {
@@ -580,6 +881,9 @@ export namespace Reply {
     SUBSCRIPTION = 5,
     ERROR = 7,
     REGISTER = 8,
+    ONLINESOURCE = 9,
+    VIEWSOURCE = 10,
+    WANTCONTROL = 11,
   }
 }
 
@@ -592,6 +896,14 @@ export interface RoleMap {
 }
 
 export const Role: RoleMap;
+
+export interface SourceTypeMap {
+  CAR: 0;
+  FEED: 1;
+  CAMERA: 2;
+}
+
+export const SourceType: SourceTypeMap;
 
 export interface TargetMap {
   PUBLISHER: 0;

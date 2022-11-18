@@ -79,6 +79,38 @@ class IonSFUGRPCWebSignal implements Signal {
     });
   }
 
+
+  /**
+   * getOnlineSources
+   * @date 2021-11-03
+   * @param {any} sid:string
+   * @param {any} uid:null|string
+   * @param {any} offer:RTCSessionDescriptionInit
+   * @returns {any}
+   */
+   getOnlineSources(sourceType: pb.SourceTypeMap ): Promise<Array<pb.OnLineSources>> {
+    const request = new pb.Request();
+    const onlineSourceRequest = new pb.OnLineSourceRequest();
+    onlineSourceRequest.setSourcetype(pb.SourceType.CAR) 
+   
+    request.setOnlinesource(onlineSourceRequest);
+    this._client.send(request);
+    return new Promise<any>((resolve, reject) => {
+      const handler = (result: pb.OnLineSourceReply) => {
+        console.log("rtc.ts,line 372,handler",result);
+        if (result.getSuccess()) {
+          resolve({
+            onlineSourcesList: result.getOnlinesourcesList(),            
+          });
+        } else {
+          reject(result.getError()?.toObject());
+        }
+        this._event.removeListener('onlineSources-reply', handler);
+      };
+      this._event.addListener('onlineSources-reply', handler);
+    });
+  }
+  
   trickle(trickle: Trickle) {
     const request = new pb.SignalRequest();
     const pbTrickle = new pb.Trickle();
