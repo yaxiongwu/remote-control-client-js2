@@ -195,8 +195,8 @@ export default class Client {
   //   return apiReady;
   // }
 
-  async wantControl(myID: string, destination: string) {
-    console.log("client.ts,wantControl");
+  async wantConnect(myID: string, destination: string) {
+    console.log("client.ts,wantConnect");
     this.transports = {
       [Role.pub]: new Transport(destination, Role.pub, this.signal, this.config),
       [Role.sub]: new Transport(destination, Role.sub, this.signal, this.config),
@@ -254,20 +254,20 @@ export default class Client {
 
    
 
-    const wantControlReply = await this.signal.wantControl(myID, destination);
-    if(!wantControlReply.idleornot){
-     alert("视频源正在被控制,还有"+wantControlReply.numofwaiting+"位在等待,当前操作者预计还有"+wantControlReply.resttimesecofcontroling+"秒结束,请稍候再试")
+    const wantConnectReply = await this.signal.wantConnect(myID, destination);
+    if(!wantConnectReply.idleornot){
+     alert("视频源正在被控制,还有"+wantConnectReply.numofwaiting+"位在等待,当前操作者预计还有"+wantConnectReply.resttimesecs+"秒结束,请稍候再试")
      delete this.transports;
      return ;
     }
-    wantControlReply.sdptype=="answer"
+    wantConnectReply.sdptype=="answer"
     let remoteDescription:RTCSessionDescriptionInit={
-    sdp:wantControlReply.sdp,
-    type:wantControlReply.sdptype=="answer"?"answer":"offer",
+    sdp:wantConnectReply.sdp,
+    type:wantConnectReply.sdptype=="answer"?"answer":"offer",
   };
     let answer: RTCSessionDescriptionInit | undefined;
     try {
-      console.log("client.ts,line 260,wantControl reply: ", wantControlReply)
+      console.log("client.ts,line 260,wantConnect reply: ", wantConnectReply)
       await this.transports[Role.sub].pc.setRemoteDescription(remoteDescription);
       //this.transports[Role.sub].hasRemoteDescription = true;
       this.transports[Role.sub].candidates.forEach((c) => this.transports![Role.sub].pc.addIceCandidate(c));
@@ -293,7 +293,7 @@ export default class Client {
     //}
 
     /**
-     * export namespace WantControlReply {
+     * export namespace WantConnectReply {
     export type AsObject = {
       success: boolean,
       idleornot: boolean,

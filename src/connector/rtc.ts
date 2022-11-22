@@ -154,9 +154,9 @@ export class RTC implements Service {
 * @param {any} sourceType: pb.SourceTypeMap
 * @returns
 */
-  async wantControl(myID:string, destination: string,config: JoinConfig | undefined) {
+  async wantConnect(myID:string, destination: string,config: JoinConfig | undefined) {
     //this.id=uid;
-    return this._rtc?.wantControl(myID,destination);
+    return this._rtc?.wantConnect(myID,destination);
   }
 
 
@@ -297,11 +297,11 @@ class RTCGRPCSignal implements Signal {
           
           this._event.emit('onlineSources-reply', onlineSources);
           break;
-        case pb.Reply.PayloadCase.WANTCONTROL:
-          const wantControlReply = reply.getWantcontrol();
-          console.log("rtc.ts,line 298,pb.Reply.PayloadCase.WANTCONTROL:%o",wantControlReply);
+        case pb.Reply.PayloadCase.WANTCONNECT:
+          const wantConnectReply = reply.getWantconnect();
+          console.log("rtc.ts,line 298,pb.Reply.PayloadCase.WANTCONNECT:%o",wantConnectReply);
           
-          this._event.emit('wantControl-reply', wantControlReply);
+          this._event.emit('wantConnect-reply', wantConnectReply);
           break;
         case pb.Reply.PayloadCase.DESCRIPTION:
           const desc = reply.getDescription();
@@ -434,34 +434,34 @@ class RTCGRPCSignal implements Signal {
    * @param {any} offer:RTCSessionDescriptionInit
    * @returns {any}
    */
-  //wantControl(from: string,to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
-   // wantControl(from: string,to:string): Promise<RTCSessionDescriptionInit> {
-    wantControl(from: string,to:string): Promise<pb.WantControlReply.AsObject> {
+  //wantConnect(from: string,to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
+   // wantConnect(from: string,to:string): Promise<RTCSessionDescriptionInit> {
+    wantConnect(from: string,to:string): Promise<pb.WantConnectReply.AsObject> {
     this.id = from;    //this.id= uuidv4()
     const request = new pb.Request();
-    const wantControlReq = new pb.WantControlRequest();
+    const wantConnectReq = new pb.WantConnectRequest();
     
-    wantControlReq.setFrom(from );
-    wantControlReq.setTo( to ); 
+    wantConnectReq.setFrom(from );
+    wantConnectReq.setTo( to ); 
     
-    //wantControlReq.setSdp(offer.sdp || '');
-    //wantControlReq.setSdptype(offer.type || '');
-    console.log("rtc.ts,line,447,wantControl(),", wantControlReq);
-    request.setWantcontrol(wantControlReq);
+    //wantConnectReq.setSdp(offer.sdp || '');
+    //wantConnectReq.setSdptype(offer.type || '');
+    console.log("rtc.ts,line,447,wantConnect(),", wantConnectReq);
+    request.setWantconnect(wantConnectReq);
     this._client.send(request);
     return new Promise<any>((resolve, reject) => {
-      const handler = (result: pb.WantControlReply) => {
-        console.log("rtc.ts,line 454 WantControlReply,handler", result);
+      const handler = (result: pb.WantConnectReply) => {
+        console.log("rtc.ts,line 454 WantConnectReply,handler", result);
         if (result.getSuccess()) {
           // if (!result.getIdleornot()){
           //   alert("视频源正在被控制,还有"+result.getNumofwaiting()+"位在等待,请稍候再试")
-          //   this._event.removeListener('wantControl-reply', handler);
+          //   this._event.removeListener('wantConnect-reply', handler);
           //   resolve({sdp:NIL,type:})
           //   return
           // }
           resolve({
              idleornot: result.getIdleornot(),
-             resttimesecofcontroling: result.getResttimesecofcontroling(),
+             resttimesecofcontroling: result.getResttimesecs(),
              numofwaiting: result.getNumofwaiting(),
             sdp:result.getSdp(),
             type:result.getSdptype(),
@@ -469,9 +469,9 @@ class RTCGRPCSignal implements Signal {
         } else {
           reject(result.getError()?.toObject());
         }
-        this._event.removeListener('wantControl-reply', handler);
+        this._event.removeListener('wantConnect-reply', handler);
       };
-      this._event.addListener('wantControl-reply', handler);
+      this._event.addListener('wantConnect-reply', handler);
     });
   }
 

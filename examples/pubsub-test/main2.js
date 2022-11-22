@@ -59,7 +59,7 @@ const getOnlineSources = async () => {
   onlineSourceList.addEventListener("click",function(event){
     var soureId = event.target.id
     //alert(sid);
-    wantControl(myID,soureId);
+    wantConnect(myID,soureId);
   })
   onlineSourceList.addEventListener("mouseover",function(event){
     event.target.style.color="red";
@@ -182,7 +182,7 @@ function clickList(source){
 // }
 
 
-const wantControl = async (myid,detination) => {
+const wantConnect = async (myid,detination) => {
   console.log("[join]: myid="+myid+" detination=", detination)
   const connector = new Ion.Connector(url, "token");    
   connector.onopen = function (service){
@@ -240,7 +240,7 @@ const wantControl = async (myid,detination) => {
     remoteSignal.innerHTML = remoteSignal.innerHTML + JSON.stringify(ev) + '\n';
   };
 
-  rtc.wantControl(myid,detination);
+  rtc.wantConnect(myid,detination);
 
 //   localDataChannel = rtc.createDataChannel(uid);
 //   localDataChannel.onopen=()=> {

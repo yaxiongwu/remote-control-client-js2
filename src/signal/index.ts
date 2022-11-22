@@ -15,7 +15,7 @@ export interface Signal {
   close(): void;
    
   getOnlineSources(sourceType: pb.SourceTypeMap ): Promise<Array<pb.OnLineSources>>;
-  //wantControl(from:  string, to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit>;
-  wantControl(from:  string, to:string): Promise<pb.WantControlReply.AsObject>;
+  //wantConnect(from:  string, to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit>;
+  wantConnect(from:  string, to:string): Promise<pb.WantConnectReply.AsObject>;
   
 }
