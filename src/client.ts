@@ -222,22 +222,23 @@ export default class Client {
     const apiReady = new Promise<void>((resolve) => {
       this.transports![Role.sub].pc.ondatachannel = (ev: RTCDataChannelEvent) => {
         console.log("this.transports![Role.sub].pc.ondatachannel," + ev);
-        if (ev.channel.label === API_CHANNEL) {
-          this.transports![Role.sub].api = ev.channel;
-          ev.channel.onmessage = (e) => {
-            try {
-              console.log("client.ts,line 126,API-CHANNEL get msg:" + e.data);
-              const msg = JSON.parse(e.data);
-              this.processChannelMessage(msg);
-            } catch (err) {
-              /* tslint:disable-next-line:no-console */
-              console.error(err);
-            }
-          };
-          resolve();
-          return;
-        }
-
+        // ev.channel.send("client.ts,line 225")
+        // if (ev.channel.label === API_CHANNEL) {
+        //   this.transports![Role.sub].api = ev.channel;
+        //   ev.channel.onmessage = (e) => {
+        //     try {
+        //       console.log("client.ts,line 126,API-CHANNEL get msg:" + e.data);
+        //       const msg = JSON.parse(e.data);
+        //       this.processChannelMessage(msg);
+        //     } catch (err) {
+        //       /* tslint:disable-next-line:no-console */
+        //       console.error(err);
+        //     }
+        //   };
+        //   resolve();
+        //   return;
+        // }
+        resolve();
         if (this.ondatachannel) {
           this.ondatachannel(ev);
         }
@@ -253,12 +254,21 @@ export default class Client {
 
    
 
-    const description = await this.signal.wantControl(myID, destination);
-
+    const wantControlReply = await this.signal.wantControl(myID, destination);
+    if(!wantControlReply.idleornot){
+     alert("视频源正在被控制,还有"+wantControlReply.numofwaiting+"位在等待,当前操作者预计还有"+wantControlReply.resttimesecofcontroling+"秒结束,请稍候再试")
+     delete this.transports;
+     return ;
+    }
+    wantControlReply.sdptype=="answer"
+    let remoteDescription:RTCSessionDescriptionInit={
+    sdp:wantControlReply.sdp,
+    type:wantControlReply.sdptype=="answer"?"answer":"offer",
+  };
     let answer: RTCSessionDescriptionInit | undefined;
     try {
-      console.log("client.ts,line 260,wantControl reply: ", description)
-      await this.transports[Role.sub].pc.setRemoteDescription(description);
+      console.log("client.ts,line 260,wantControl reply: ", wantControlReply)
+      await this.transports[Role.sub].pc.setRemoteDescription(remoteDescription);
       //this.transports[Role.sub].hasRemoteDescription = true;
       this.transports[Role.sub].candidates.forEach((c) => this.transports![Role.sub].pc.addIceCandidate(c));
       this.transports[Role.sub].candidates = [];
@@ -337,7 +347,7 @@ export default class Client {
     if (!this.transports) {
       throw Error(ERR_NO_SESSION);
     }
-    return this.transports[Role.pub].pc.createDataChannel(label);
+    return this.transports[Role.sub].pc.createDataChannel(label);
   }
 
   close() {

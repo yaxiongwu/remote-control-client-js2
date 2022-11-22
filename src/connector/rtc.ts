@@ -6,7 +6,7 @@ import { EventEmitter } from 'events';
 import * as sfu_rpc from '../_library/proto/rtc/rtc_pb_service';
 import * as pb from '../_library/proto/rtc/rtc_pb';
 import { LocalStream, RemoteStream } from '../stream';
-import { v4 as uuidv4 } from 'uuid';
+import { NIL, v4 as uuidv4 } from 'uuid';
 
 /**
  * TrackState: track state
@@ -435,7 +435,8 @@ class RTCGRPCSignal implements Signal {
    * @returns {any}
    */
   //wantControl(from: string,to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
-    wantControl(from: string,to:string): Promise<RTCSessionDescriptionInit> {
+   // wantControl(from: string,to:string): Promise<RTCSessionDescriptionInit> {
+    wantControl(from: string,to:string): Promise<pb.WantControlReply.AsObject> {
     this.id = from;    //this.id= uuidv4()
     const request = new pb.Request();
     const wantControlReq = new pb.WantControlRequest();
@@ -452,10 +453,16 @@ class RTCGRPCSignal implements Signal {
       const handler = (result: pb.WantControlReply) => {
         console.log("rtc.ts,line 454 WantControlReply,handler", result);
         if (result.getSuccess()) {
+          // if (!result.getIdleornot()){
+          //   alert("视频源正在被控制,还有"+result.getNumofwaiting()+"位在等待,请稍候再试")
+          //   this._event.removeListener('wantControl-reply', handler);
+          //   resolve({sdp:NIL,type:})
+          //   return
+          // }
           resolve({
-            // idleornot: result.getIdleornot(),
-            // resttimesecofcontroling: result.getResttimesecofcontroling(),
-            // numofwaiting: result.getNumofwaiting(),
+             idleornot: result.getIdleornot(),
+             resttimesecofcontroling: result.getResttimesecofcontroling(),
+             numofwaiting: result.getNumofwaiting(),
             sdp:result.getSdp(),
             type:result.getSdptype(),
           });

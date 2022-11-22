@@ -27,14 +27,16 @@ let trackEvent;
 const url = 'http://120.78.200.246:5551';
 //const url = 'http://www.bxzryd.cn:5551';
 //const uid = uuidv4();
-const myID = "uid198";//uuidv4();
+//const myID = "uid198";//uuidv4();
+const myID=uidTime();
 //const sid = "ion";
 let room;
 let rtc;
 let localStream;
 let start;
+let channelDataEvent;
 const getOnlineSources = async () => {
-  const connector = new Ion.Connector(url, "token");    
+  const connector = new Ion.Connector(url, "token");
   connector.onopen = function (service){
       console.log("[onopen]: service = ", service.name);
   };
@@ -73,109 +75,111 @@ function clickList(source){
   alert(source);
 }
 
-const join = async (sid) => {
-    console.log("[join]: sid="+sid+" uid=", uid)
-    const connector = new Ion.Connector(url, "token");    
-    connector.onopen = function (service){
-        console.log("[onopen]: service = ", service.name);
-    };
+// const join = async (sid) => {
+//     console.log("[join]: sid="+sid+" uid=", uid)
+//     const connector = new Ion.Connector(url, "token");    
+//     connector.onopen = function (service){
+//         console.log("[onopen]: service = ", service.name);
+//     };
 
-    connector.onclose = function (service){
-        console.log('[onclose]: service = ' + service.name);
-    };
+//     connector.onclose = function (service){
+//         console.log('[onclose]: service = ' + service.name);
+//     };
 
-    joinBtn.disabled = "true";
-    leaveBtn.removeAttribute('disabled');
-    publishBtn.removeAttribute('disabled');
-    publishSBtn.removeAttribute('disabled');
+//     joinBtn.disabled = "true";
+//     leaveBtn.removeAttribute('disabled');
+//     publishBtn.removeAttribute('disabled');
+//     publishSBtn.removeAttribute('disabled');
 
-    rtc = new Ion.RTC(connector);
+//     rtc = new Ion.RTC(connector);
 
-    rtc.ontrack = (track, stream) => {
-      console.log("got ", track.kind, " track", track.id, "for stream", stream.id);
-      if (track.kind === "video") {
-        track.onunmute = () => {
-          if (!streams[stream.id]) {
-            const remoteVideo = document.createElement("video");
-            remoteVideo.srcObject = stream;
-            remoteVideo.autoplay = true;
-            remoteVideo.muted = true;
-            remoteVideo.addEventListener("loadedmetadata", function () {
-              sizeTag.innerHTML = `${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`;
-            });
+//     rtc.ontrack = (track, stream) => {
+//       console.log("got ", track.kind, " track", track.id, "for stream", stream.id);
+//       if (track.kind === "video") {
+//         track.onunmute = () => {
+//           if (!streams[stream.id]) {
+//             const remoteVideo = document.createElement("video");
+//             remoteVideo.srcObject = stream;
+//             remoteVideo.autoplay = true;
+//             remoteVideo.muted = true;
+//             remoteVideo.addEventListener("loadedmetadata", function () {
+//               sizeTag.innerHTML = `${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`;
+//             });
     
-            remoteVideo.onresize = function () {
-              sizeTag.innerHTML = `${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`;
-            };
-            remotesDiv.appendChild(remoteVideo);
+//             remoteVideo.onresize = function () {
+//               sizeTag.innerHTML = `${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`;
+//             };
+//             remotesDiv.appendChild(remoteVideo);
 			
-            streams[stream.id] = stream;
-            stream.onremovetrack = () => {
-              if (streams[stream.id]) {
-                remotesDiv.removeChild(remoteVideo);
-                streams[stream.id] = null;
-              }
-            };
-            getStats();
-          }
-        };
-      }
-    };
+//             streams[stream.id] = stream;
+//             stream.onremovetrack = () => {
+//               if (streams[stream.id]) {
+//                 remotesDiv.removeChild(remoteVideo);
+//                 streams[stream.id] = null;
+//               }
+//             };
+//             getStats();
+//           }
+//         };
+//       }
+//     };
 
-    rtc.ontrackevent = function (ev) {
-      console.log("ontrackevent: \nuid = ", ev.uid, " \nstate = ", ev.state, ", \ntracks = ", JSON.stringify(ev.tracks));
-      if (trackEvent === undefined) {
-        console.log("store trackEvent=", ev)
-        trackEvent = ev;
-      }
-      remoteSignal.innerHTML = remoteSignal.innerHTML + JSON.stringify(ev) + '\n';
-    };
+//     rtc.ontrackevent = function (ev) {
+//       console.log("ontrackevent: \nuid = ", ev.uid, " \nstate = ", ev.state, ", \ntracks = ", JSON.stringify(ev.tracks));
+//       if (trackEvent === undefined) {
+//         console.log("store trackEvent=", ev)
+//         trackEvent = ev;
+//       }
+//       remoteSignal.innerHTML = remoteSignal.innerHTML + JSON.stringify(ev) + '\n';
+//     };
 
-    rtc.join(sid, uid);
+//     rtc.join(sid, uid);
 
-    const streams = {};
+//     const streams = {};
 
-    start = (sc) => {
-      // publishSBtn.disabled = "true";
-      // publishBtn.disabled = "true";
-      //  localDataChannel = rtc.createDataChannel(uid);
-      //  localDataChannel.onopen=()=>{
-      //    localDataChannel.send("wuyaxiong235467")
-      //  }
-      //  localDataChannel.onmessage=(msg)=>{
-      //   console.log("localDataChannel.onmessage:",msg)
-      //  }
+//     start = (sc) => {
+//       // publishSBtn.disabled = "true";
+//       // publishBtn.disabled = "true";
+//       //  localDataChannel = rtc.createDataChannel(uid);
+//       //  localDataChannel.onopen=()=>{
+//       //    localDataChannel.send("wuyaxiong235467")
+//       //  }
+//       //  localDataChannel.onmessage=(msg)=>{
+//       //   console.log("localDataChannel.onmessage:",msg)
+//       //  }
 
-      let constraints = {
-        resolution: resolutionBox.options[resolutionBox.selectedIndex].value,
-        codec: codecBox.options[codecBox.selectedIndex].value,
-        audio: true,
-        simulcast: sc,
-      }
-      console.log("getUserMedia constraints=", constraints)
-      Ion.LocalStream.getUserMedia(constraints)
-        .then((media) => {
-          localStream = media;
-          localVideo.srcObject = media;
-          localVideo.autoplay = true;
-          localVideo.controls = true;
-          localVideo.muted = true;
+//       let constraints = {
+//         resolution: resolutionBox.options[resolutionBox.selectedIndex].value,
+//         codec: codecBox.options[codecBox.selectedIndex].value,
+//         audio: true,
+//         simulcast: sc,
+//       }
+//       console.log("getUserMedia constraints=", constraints)
+//       Ion.LocalStream.getUserMedia(constraints)
+//         .then((media) => {
+//           localStream = media;
+//           localVideo.srcObject = media;
+//           localVideo.autoplay = true;
+//           localVideo.controls = true;
+//           localVideo.muted = true;
 
-          rtc.publish(media);
-          localDataChannel = rtc.createDataChannel(uid);
-        })
-        .catch(console.error);
+//           rtc.publish(media);
+//           localDataChannel = rtc.createDataChannel(uid);
+//         })
+//         .catch(console.error);
      
-    };
+//     };
 
-    rtc.ondatachannel = ({ channel }) => {
-      console.log("ondatachannel,",channel)
-      channel.onmessage = ({ data }) => {
-        console.log("datachannel msg:", data)
-        remoteData.innerHTML = data;
-      };
-    };
-}
+//     rtc.ondatachannel = ({ channel }) => {
+//       console.log("ondatachannel,",channel)
+//       channel.send("wuyaxiong call back")
+//       channel.onmessage = ({ data }) => {
+//         console.log("datachannel msg:", data)
+
+//         remoteData.innerHTML = data;
+//       };
+//     };
+// }
 
 
 const wantControl = async (myid,detination) => {
@@ -238,6 +242,14 @@ const wantControl = async (myid,detination) => {
 
   rtc.wantControl(myid,detination);
 
+//   localDataChannel = rtc.createDataChannel(uid);
+//   localDataChannel.onopen=()=> {
+//             console.log("data channel onpen")
+//   }
+//  localDataChannel.onmessage=({msg})=> {
+//   console.log("data channel msg: ", msg)
+//  }
+
   const streams = {};
 
   start = (sc) => {
@@ -265,35 +277,34 @@ const wantControl = async (myid,detination) => {
         localVideo.autoplay = true;
         localVideo.controls = true;
         localVideo.muted = true;
-
         rtc.publish(media);
         localDataChannel = rtc.createDataChannel(uid);
-      })
-      .catch(console.error);
-   
+      }).catch(console.error);   
   };
 
-  rtc.ondatachannel = ({ channel }) => {
-    console.log("ondatachannel,",channel)
-    channel.onmessage = ({ data }) => {
+  rtc.ondatachannel = (ev) => {
+    console.log("ondatachannel,",ev)
+    channelDataEvent=ev;
+    ev.channel.onmessage = ({ data }) => {
       console.log("datachannel msg:", data)
+      //ev.channel.send("wuyaxiong nv call back");
       remoteData.innerHTML = data;
     };
   };
 }
 
 const send = () => {
-  if (!localDataChannel || !localDataChannel.readyState) {
-    alert('publish first!', '', {
-      confirmButtonText: 'OK',
-    });
-    return
-  }
+  // if (!localDataChannel || !localDataChannel.readyState) {
+  //   alert('publish first!', '', {
+  //     confirmButtonText: 'OK',
+  //   });
+  //   return
+  // }
 
-  if (localDataChannel.readyState === "open") {
+  if (channelDataEvent.channel.readyState === "open") {
     console.log("datachannel send:", localData.value)
-    localDataChannel.send(localData.value);
-  }
+    channelDataEvent.channel.send(localData.value);
+  } 
 };
 
 const leave = () => {
@@ -332,8 +343,6 @@ const subscribe = () => {
     console.log("subscribe infos=", infos)
     rtc.subscribe(infos);
 }
-
-
 
 const controlLocalVideo = (radio) => {
   if (radio.value === "false") {
@@ -379,6 +388,16 @@ const getStats = () => {
     });
   }, 1000);
 };
+
+function uidTime(){
+  var uid ="",random;
+  const time=(new Date().getTime()-new Date(2022,0).getTime()).toString();
+  for(i=0;i<8;i++) {
+       random = Math.floor(Math.random()*16);
+       uid+=random.toString(16);
+  }
+  return "web"+time+uid;
+}
 
 function syntaxHighlight(json) {
   json = json
