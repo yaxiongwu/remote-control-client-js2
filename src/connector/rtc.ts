@@ -143,7 +143,7 @@ export class RTC implements Service {
  * @param {any} sourceType: pb.SourceTypeMap
  * @returns
  */
-  async getOnlineSources(sourceType: pb.SourceTypeMap) {
+  async getOnlineSources(sourceType: pb.SourceTypeMap[keyof pb.SourceTypeMap]) {
 
     return this._sig?.getOnlineSources(sourceType);
   }
@@ -154,9 +154,10 @@ export class RTC implements Service {
 * @param {any} sourceType: pb.SourceTypeMap
 * @returns
 */
-  async wantConnect(myID:string, destination: string,config: JoinConfig | undefined) {
+  async wantConnect(myID:string, destination: string,connectType:pb.ConnectTypeMap[keyof pb.ConnectTypeMap], config: JoinConfig | undefined) {
     //this.id=uid;
-    return this._rtc?.wantConnect(myID,destination);
+    console.log("rtc.ts,line 159,connectType: " + connectType)
+    return this._rtc?.wantConnect(myID,destination,connectType);
   }
 
 
@@ -436,17 +437,17 @@ class RTCGRPCSignal implements Signal {
    */
   //wantConnect(from: string,to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
    // wantConnect(from: string,to:string): Promise<RTCSessionDescriptionInit> {
-    wantConnect(from: string,to:string): Promise<pb.WantConnectReply.AsObject> {
+    wantConnect(from: string,to:string,connectType:pb.ConnectTypeMap[keyof pb.ConnectTypeMap]): Promise<pb.WantConnectReply.AsObject> {
     this.id = from;    //this.id= uuidv4()
+
     const request = new pb.Request();
-    const wantConnectReq = new pb.WantConnectRequest();
-    
+    const wantConnectReq = new pb.WantConnectRequest();    
     wantConnectReq.setFrom(from );
-    wantConnectReq.setTo( to ); 
-    
+    wantConnectReq.setTo( to );     
+    wantConnectReq.setConnecttype(connectType);    
     //wantConnectReq.setSdp(offer.sdp || '');
     //wantConnectReq.setSdptype(offer.type || '');
-    console.log("rtc.ts,line,447,wantConnect(),", wantConnectReq);
+    console.log("rtc.ts,line,451,wantConnectReq:", wantConnectReq);
     request.setWantconnect(wantConnectReq);
     this._client.send(request);
     return new Promise<any>((resolve, reject) => {
@@ -482,11 +483,12 @@ class RTCGRPCSignal implements Signal {
    * @param {any} sourceType: pb.SourceTypeMap
    * @returns {any} Promise<Array<pb.OnLineSources>
    */
-  getOnlineSources(sourceType: pb.SourceTypeMap): Promise<Array<pb.OnLineSources>> {
+  getOnlineSources(sourceType: pb.SourceTypeMap[keyof pb.SourceTypeMap]): Promise<Array<pb.OnLineSources>> {
     const request = new pb.Request();
     const onlineSourceRequest = new pb.OnLineSourceRequest();
-    onlineSourceRequest.setSourcetype(pb.SourceType.CAR)
-
+    onlineSourceRequest.setSourcetype(sourceType);
+    console.log("rtc.ts,line 491,onlineSourceRequest: ");
+    console.log(onlineSourceRequest)
     request.setOnlinesource(onlineSourceRequest);
     this._client.send(request);
     return new Promise<any>((resolve, reject) => {

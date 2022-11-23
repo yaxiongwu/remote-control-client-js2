@@ -25,6 +25,18 @@ let trackEvent;
 
 //const url = 'http://192.168.1.199:5551';
 const url = 'http://120.78.200.246:5551';
+const connectType={
+  Control : 0,
+  View:1,
+  Manage : 2,
+}
+const sourceType={
+Car :0,
+Feed :1,
+Camera : 2,
+Boat : 3,
+Submarine : 4,//潜艇
+}
 //const url = 'http://www.bxzryd.cn:5551';
 //const uid = uuidv4();
 //const myID = "uid198";//uuidv4();
@@ -47,7 +59,7 @@ const getOnlineSources = async () => {
 
   //getonlineSourceBtn.disabled = "true";
   rtc = new Ion.RTC(connector);
-  rtc.getOnlineSources(0).then(function(array){
+  rtc.getOnlineSources(sourceType.Car).then(function(array){
     console.log(array);
     //alert(array[0].getSid()+" "+array[0].getUid()+" "+array[1].getSid()+" "+array[1].getUid());    
     array.forEach(function(item,index){
@@ -240,7 +252,7 @@ const wantConnect = async (myid,detination) => {
     remoteSignal.innerHTML = remoteSignal.innerHTML + JSON.stringify(ev) + '\n';
   };
 
-  rtc.wantConnect(myid,detination);
+  rtc.wantConnect(myid,detination, connectType.Control);
 
 //   localDataChannel = rtc.createDataChannel(uid);
 //   localDataChannel.onopen=()=> {

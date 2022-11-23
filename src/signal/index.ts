@@ -14,8 +14,8 @@ export interface Signal {
   sendTrickle(trickle: Trickle): void;
   close(): void;
    
-  getOnlineSources(sourceType: pb.SourceTypeMap ): Promise<Array<pb.OnLineSources>>;
+  getOnlineSources(sourceType: pb.SourceTypeMap[keyof pb.SourceTypeMap] ): Promise<Array<pb.OnLineSources>>;
   //wantConnect(from:  string, to:string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit>;
-  wantConnect(from:  string, to:string): Promise<pb.WantConnectReply.AsObject>;
+  wantConnect(from:  string, to:string,connectType:pb.ConnectTypeMap[keyof pb.ConnectTypeMap]): Promise<pb.WantConnectReply.AsObject>;
   
 }

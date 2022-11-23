@@ -195,7 +195,7 @@ export default class Client {
   //   return apiReady;
   // }
 
-  async wantConnect(myID: string, destination: string) {
+  async wantConnect(myID: string, destination: string,connectType:pb.ConnectTypeMap[keyof pb.ConnectTypeMap]) {
     console.log("client.ts,wantConnect");
     this.transports = {
       [Role.pub]: new Transport(destination, Role.pub, this.signal, this.config),
@@ -254,7 +254,8 @@ export default class Client {
 
    
 
-    const wantConnectReply = await this.signal.wantConnect(myID, destination);
+    const wantConnectReply = await this.signal.wantConnect(myID, destination,connectType);
+    //console.log("client.ts line 258,wantConnectReply: ", wantConnectReply)
     if(!wantConnectReply.idleornot){
      alert("视频源正在被控制,还有"+wantConnectReply.numofwaiting+"位在等待,当前操作者预计还有"+wantConnectReply.resttimesecs+"秒结束,请稍候再试")
      delete this.transports;
